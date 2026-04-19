@@ -14,8 +14,10 @@ ARG RCLONE_SHA256_AMD64=f3757aa829828c0f3359301bea25eef4d4fd62de735c47546ee6866c
 ARG RCLONE_SHA256_ARM=531c4a98de3b4287b2caabbc15d914c608a151cb69a661a0a4dc47542d1cf5ab
 ARG RCLONE_SHA256_ARM64=c1669ef42d4ad65e3bb3f2cf0b2acf76cf0cbffefe463349a4f2244d8dbed701
 
-ARG GO_CRON_VERSION=0.0.4
-ARG GO_CRON_SHA256=6c8ac52637150e9c7ee88f43e29e158e96470a3aaa3fcf47fd33771a8a76d959
+ARG SUPERCRONIC_VERSION=0.2.44
+ARG SUPERCRONIC_SHA256_AMD64=6feff7d5eba16a89cf229b7eb644cfae2f03a32c62ca320f17654659315275b6
+ARG SUPERCRONIC_SHA256_ARM=d2f18cf24f6df36eb49173dbbd454815475699c43c99b6ab3983436c6994a7bf
+ARG SUPERCRONIC_SHA256_ARM64=ec29b3129ab20100971d21d391150d50398e5caaa33b8652eab919e2c5143057
 
 RUN apk add --no-cache curl
 
@@ -35,14 +37,17 @@ RUN case "$(cat /tmp/ARCH)" in \
   amd64 ) \
     echo "${RESTIC_SHA256_AMD64}" > RESTIC_SHA256 ; \
     echo "${RCLONE_SHA256_AMD64}" > RCLONE_SHA256 ; \
+    echo "${SUPERCRONIC_SHA256_AMD64}" > SUPERCRONIC_SHA256 ; \
     ;; \
   arm ) \
     echo "${RESTIC_SHA256_ARM}" > RESTIC_SHA256 ; \
     echo "${RCLONE_SHA256_ARM}" > RCLONE_SHA256 ; \
+    echo "${SUPERCRONIC_SHA256_ARM}" > SUPERCRONIC_SHA256 ; \
     ;; \
   arm64 ) \
     echo "${RESTIC_SHA256_ARM64}" > RESTIC_SHA256 ; \
     echo "${RCLONE_SHA256_ARM64}" > RCLONE_SHA256 ; \
+    echo "${SUPERCRONIC_SHA256_ARM64}" > SUPERCRONIC_SHA256 ; \
     ;; \
   *) \
     echo "unknown architecture '$(cat /tmp/ARCH)'" ; \
@@ -64,14 +69,10 @@ RUN curl -sL --fail -o restic.bz2 https://github.com/restic/restic/releases/down
  && rm -rf rclone-v${RCLONE_VERSION}-linux-$(cat /tmp/ARCH) \
  && rm rclone.zip
 
-RUN curl -sL -o go-cron.tar.gz https://github.com/djmaze/go-cron/archive/v${GO_CRON_VERSION}.tar.gz \
- && echo "${GO_CRON_SHA256}  go-cron.tar.gz" | sha256sum -c - \
- && tar xzf go-cron.tar.gz \
- && cd go-cron-${GO_CRON_VERSION} \
- && go build \
- && mv go-cron /usr/local/bin/go-cron \
- && cd .. \
- && rm go-cron.tar.gz go-cron-${GO_CRON_VERSION} -fR
+RUN curl -sL -o supercronic https://github.com/aptible/supercronic/releases/download/v${SUPERCRONIC_VERSION}/supercronic-linux-$(cat /tmp/ARCH) \
+ && echo "$(cat SUPERCRONIC_SHA256)  supercronic" | sha256sum -c - \
+ && chmod +x supercronic \
+ && mv supercronic /usr/local/bin/supercronic
 
 
 #
@@ -79,7 +80,8 @@ RUN curl -sL -o go-cron.tar.gz https://github.com/djmaze/go-cron/archive/v${GO_C
 #
 FROM alpine:3.22
 
-RUN apk add --update --no-cache ca-certificates fuse nfs-utils openssh tzdata bash curl docker-cli gzip tini
+RUN apk add --update --no-cache ca-certificates fuse nfs-utils openssh tzdata bash curl docker-cli gzip sqlite \
+ && apk add --update --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main postgresql18-client
 
 ENV RESTIC_REPOSITORY=/mnt/restic
 
@@ -87,4 +89,4 @@ COPY --from=builder /usr/local/bin/* /usr/local/bin/
 COPY backup prune check /usr/local/bin/
 COPY entrypoint /
 
-ENTRYPOINT ["/sbin/tini", "--", "/entrypoint"]
+ENTRYPOINT ["/entrypoint"]

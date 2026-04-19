@@ -71,7 +71,8 @@ else
       /usr/local/bin/backup || true
     fi
     echo "Scheduling backup job according to cron expression."
-    exec go-cron "$BACKUP_CRON" /usr/local/bin/backup
+    echo "$BACKUP_CRON /usr/local/bin/backup" > /tmp/crontab
+    exec supercronic /tmp/crontab
   fi
   if [[ -n "${PRUNE_CRON:-}" ]]; then
     if [ "${RUN_ON_STARTUP:-}" == "true" ]; then
@@ -79,7 +80,8 @@ else
       /usr/local/bin/prune || true
     fi
     echo "Scheduling prune job according to cron expression."
-    exec go-cron "$PRUNE_CRON" /usr/local/bin/prune
+    echo "$PRUNE_CRON /usr/local/bin/prune" > /tmp/crontab
+    exec supercronic /tmp/crontab
   fi
   if [[ -n "${CHECK_CRON:-}" ]]; then
     if [ "${RUN_ON_STARTUP:-}" == "true" ]; then
@@ -87,7 +89,8 @@ else
       /usr/local/bin/check || true
     fi
     echo "Scheduling check job according to cron expression."
-    exec go-cron "$CHECK_CRON" /usr/local/bin/check
+    echo "$CHECK_CRON /usr/local/bin/check" > /tmp/crontab
+    exec supercronic /tmp/crontab
   fi
   >&2 echo "No valid operating mode configured! Please set either the BACKUP_CRON, PRUNE_CRON or CHECK_CRON environment variable."
   exit 1

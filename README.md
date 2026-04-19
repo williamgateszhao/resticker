@@ -1,5 +1,7 @@
 # Resticker
 
+> **Note:** This project is a fork of [djmaze/resticker](https://github.com/djmaze/resticker). The main differences are that `go-cron` and `tini` have been replaced with `supercronic`, and the image comes with `sqlite3` and `postgresql18-client` pre-installed.
+
 [![Docker Pulls](https://img.shields.io/docker/pulls/mazzolino/restic.svg)](https://hub.docker.com/r/mazzolino/restic/)
 [![Build status](https://ci.strahlungsfrei.de/api/badges/djmaze/resticker/status.svg)](https://ci.strahlungsfrei.de/djmaze/resticker)
 
@@ -83,9 +85,9 @@ When given the `unlock` command, the repository check will be skipped (because i
 
 _Note: `BACKUP_CRON`, `PRUNE_CRON` and `CHECK_CRON` are mutually exclusive._
 
-- `BACKUP_CRON` - A cron expression for when to run the backup. E.g. `0 30 3 * * *` in order to run every night at 3:30 am. See [the go-cron documentation](https://godoc.org/github.com/robfig/cron) for details on the expression format (a [customized go-cron](https://github.com/djmaze/go-cron/) is used which allows the definition of seconds as first parameter).
-- `PRUNE_CRON` - A cron expression for when to run the prune job. E.g. `0 0 4 * * *` in order to run every night at 4:00 am. See [the go-cron documentation](https://godoc.org/github.com/robfig/cron) for details on the expression format (a [customized go-cron](https://github.com/djmaze/go-cron/) is used which allows the definition of seconds as first parameter).
-- `CHECK_CRON` - A cron expression for when to run the check job. E.g. `0 15 5 * * *` in order to run every night at 5:15 am. See [the go-cron documentation](https://godoc.org/github.com/robfig/cron) for details on the expression format (a [customized go-cron](https://github.com/djmaze/go-cron/) is used which allows the definition of seconds as first parameter).
+- `BACKUP_CRON` - A cron expression for when to run the backup. E.g. `30 3 * * *` in order to run every night at 3:30 am. See [the supercronic documentation](https://github.com/aptible/supercronic) for details on the expression format (it supports standard 5-segment and 7-segment formats, but not 6-segment formats).
+- `PRUNE_CRON` - A cron expression for when to run the prune job. E.g. `0 4 * * *` in order to run every night at 4:00 am. See [the supercronic documentation](https://github.com/aptible/supercronic) for details on the expression format (it supports standard 5-segment and 7-segment formats, but not 6-segment formats).
+- `CHECK_CRON` - A cron expression for when to run the check job. E.g. `15 5 * * *` in order to run every night at 5:15 am. See [the supercronic documentation](https://github.com/aptible/supercronic) for details on the expression format (it supports standard 5-segment and 7-segment formats, but not 6-segment formats).
 - `RUN_ON_STARTUP` - Set to `"true"` to execute a backup or prune job right on startup, in addition to the given cron expression. Disabled by default
 - `RESTIC_REPOSITORY` - Location of the restic repository. You can use [any target supported by restic](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html). Default `/mnt/restic`
 - `RESTIC_BACKUP_SOURCES` - Source directory to backup. Make sure to mount this into the container as a volume (see the example configs). Default `/data`
@@ -297,6 +299,11 @@ shellspec
 ```
 
 This will build the image, create a container and run the tests inside the container.
+
+## Credits
+
+[restic-backup-docker](https://github.com/Lobaro/restic-backup-docker) was used as a starting point. Thanks!
+ner.
 
 ## Credits
 

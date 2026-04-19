@@ -21,6 +21,15 @@
       "versioningTemplate": "semver",
       "extractVersionTemplate": "^v(?<version>.*)$",
       "currentValueTemplate": "{{ currentValue }}"
+    },
+    {
+      "fileMatch": ["^Dockerfile$"],
+      "matchStrings": ["ARG SUPERCRONIC_VERSION=(?<currentValue>.*)"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "aptible/supercronic",
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v(?<version>.*)$",
+      "currentValueTemplate": "{{ currentValue }}"
     }
   ]
 }
